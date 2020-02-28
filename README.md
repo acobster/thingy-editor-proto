@@ -3,23 +3,20 @@
 Proof-of-concept for Live Editing using the Thingy editor.
 
 ### Development mode
-To start the Figwheel compiler, navigate to the project folder and run the following command in the terminal:
+To start the compiler, navigate to the project folder and run the following command in the terminal:
 
 ```
-lein figwheel
+shadow-cljs watch app
 ```
-
-Figwheel will automatically push cljs changes to the browser.
-Once Figwheel starts up, you should be able to open the `public/index.html` page in the browser.
 
 ### REPL
 
-The project is setup to start nREPL on port `7002` once Figwheel starts.
-Once you connect to the nREPL, run `(cljs)` to switch to the ClojureScript REPL.
+```
+shadow-cljs cljs-repl
+```
 
 ### Building for production
 
 ```
-lein clean
-lein package
+shadow-cljs release app
 ```
