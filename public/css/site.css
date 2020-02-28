@@ -1,0 +1,68 @@
+body {
+  font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 72px;
+  -webkit-font-smoothing: antialiased;
+  font-size: 1.125em;
+  color: #333;
+  line-height: 1.5em;
+}
+
+
+.cursor {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  height: 1em;
+  margin-right: -1px;
+  margin-bottom: -2px;
+  border: 1px solid black;
+}
+.cursor::before {
+  position: absolute;
+  display: block;
+  content: "";
+  width: 5px;
+  height: 5px;
+  top: 0;
+  left: 0;
+  margin-top: -2px;
+  margin-left: -2px;
+  color: white;
+  background-color: red;
+  font-size: 0.8rem;
+}
+.cursor:hover::before {
+  width: auto;
+  height: auto;
+  margin: -1.2em 0 0 -1px;
+  padding: 1px 2px;
+  line-height: 1em;
+  content: "name";
+}
+
+
+h1, h2, h3 {
+  color: #000;
+}
+h1 {
+  font-size: 2.5em
+}
+
+h2 {
+  font-size: 2em
+}
+
+h3 {
+  font-size: 1.5em
+}
+
+a {
+  text-decoration: none;
+  color: #09f;
+}
+
+a:hover {
+  text-decoration: underline;
+}
