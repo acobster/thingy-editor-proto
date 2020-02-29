@@ -8,13 +8,19 @@
                :color "red"}]
     :cursor-colors {"coby" "red"
                     "chuck" "blue"
-                    "alex" "green"}}))
+                    "alex" "green"}
+    :editables [{:h [:h2 "Live editing demo"]}
+                {:h [:p "Officia corrupti quis consectetur dolore nihil reprehenderit consectetur odio voluptatum."]}
+                {:h [:p "Nihil veniam labore animi magna occaecat. Cillum quos et mollit consequat. Assumenda duis est fuga consectetur nostrud lorem ad."]}
+                {:h [:h3 "H3 Heading"]}
+                {:h [:p "Ad proident distinctio eos quo minim et. Repellendus irure eiusmod eligendi tempor enim nobis fuga."]}]}))
 
 ;; -------------------------
 ;; Views
 
 (defn cursor [c]
   [:span.cursor {:style {:border-color (:color c)}}])
+
 
 (defn place-cursor [html {:keys [pos] :as c}]
   (let [elem-pos (butlast (butlast pos))
@@ -60,7 +66,7 @@
   (vec (assoc-in (normalize-attrs elem) [1 :content-editable] true)))
 
 (defn contenteditable [x]
-  (if (make-editable? x) (do (js/console.log "yup" (str (first x))) (make-editable x)) x))
+  (if (make-editable? x) (make-editable x) x))
 
 
 (defn editable [html]
@@ -68,12 +74,7 @@
 
 (defn home-page []
   [editable
-   [:div
-    [:h2 "Live editing demo"]
-    [:p "Officia corrupti quis consectetur dolore nihil reprehenderit consectetur odio voluptatum."]
-    [:p "Nihil veniam labore animi magna occaecat. Cillum quos et mollit consequat. Assumenda duis est fuga consectetur nostrud lorem ad."]
-    [:h3 "H3 Heading"]
-    [:p "Ad proident distinctio eos quo minim et. Repellendus irure eiusmod eligendi tempor enim nobis fuga."]]])
+   (vec (concat [:div] (map :h (:editables @appstate))))])
 
 ;; -------------------------
 ;; Initialize app

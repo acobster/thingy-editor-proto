@@ -9,6 +9,11 @@ body {
   line-height: 1.5em;
 }
 
+.app-container {
+  max-width: 95%;
+  margin: 1em auto;
+}
+
 
 .cursor {
   position: relative;

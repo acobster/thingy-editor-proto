@@ -5,7 +5,12 @@
  :builds       {:app {:target     :browser
                       :output-dir "public/js"
                       :asset-path "/js"
-                      :modules    {:app {:entries [live-proto.core]}}
+                      :modules    {:common {:entries []}
+                                   :dev {:init-fn live-proto.core/init!
+                                         :depends-on #{:common}}
+                                   :metro-parks-tacoma {:init-fn live-proto.metro-parks-tacoma.core/init!
+                                                        :after-load live-proto.metro-parks-tacoma.core/mount-root
+                                                        :depends-on #{:common}}}
                       :devtools   {:after-load live-proto.core/mount-root}}}
 
  :dev-http     {3000 {:root    "public"
