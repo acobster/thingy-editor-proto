@@ -56,7 +56,7 @@
 
 (defn mount-root []
   ; TODO this is creating a duplicate #editable-container - it shouldn't do that.
-  (r/render (:root @appstate) (:dom-root @appstate)))
+  (r/render (:root-content-fragment @appstate) (:dom-root @appstate)))
 
 (defn ^:export init! []
   (mount-root))

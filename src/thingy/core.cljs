@@ -47,7 +47,7 @@
   (let [eds (query-editables (:editables conf) root)
         state (r/atom {:conf conf
                        :dom-root root
-                       :root (datafy root)
+                       :root-content-fragment (dom/fragment root)
                        :paths->nodes eds
                        :selection (datafy (dom/selection))
                        :remote-cursors []})]

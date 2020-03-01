@@ -62,6 +62,15 @@
   js/NamedNodeMap
   (-count [m] (.-length m)))
 
+(defprotocol Fragment
+  (fragment [x]))
+
+(extend-protocol Fragment
+  js/Element
+  (fragment [elem] (fragment (.-childNodes elem)))
+
+  js/NodeList
+  (fragment [nodes] (vec (concat [:<>] (datafy nodes)))))
 
 
 
@@ -209,7 +218,6 @@
   ;;          MUTATIONS          ;;
  ;;                             ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (defn select!
   "Set the current user's text selection and cursor position"
