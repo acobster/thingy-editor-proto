@@ -37,8 +37,8 @@ body {
   color: white;
   background-color: red;
   font-size: 0.8rem;
-}
-.cursor:hover::before {
+/* }
+.cursor:hover::before { */
   width: auto;
   height: auto;
   margin: -1.2em 0 0 -1px;

@@ -1,86 +1,63 @@
 (ns live-proto.core
     (:require
-      [reagent.core :as r]))
-
-(defonce appstate
-  (r/atom
-   {:cursors [{:pos [3 1 25]
-               :color "red"}]
-    :cursor-colors {"coby" "red"
-                    "chuck" "blue"
-                    "alex" "green"}
-    :editables [{:h [:h2 "Live editing demo"]}
-                {:h [:p "Officia corrupti quis consectetur dolore nihil reprehenderit consectetur odio voluptatum."]}
-                {:h [:p "Nihil veniam labore animi magna occaecat. Cillum quos et mollit consequat. Assumenda duis est fuga consectetur nostrud lorem ad."]}
-                {:h [:h3 "H3 Heading"]}
-                {:h [:p "Ad proident distinctio eos quo minim et. Repellendus irure eiusmod eligendi tempor enim nobis fuga."]}]}))
-
-;; -------------------------
-;; Views
-
-(defn cursor [c]
-  [:span.cursor {:style {:border-color (:color c)}}])
+     [thingy.core :as t]
+     [thingy.dom :as dom]
+     [reagent.core :as r]))
 
 
-(defn place-cursor [html {:keys [pos] :as c}]
-  (let [elem-pos (butlast (butlast pos))
-        node-pos (last (butlast pos))
-        strpos (last pos)
-        elem (get-in html (butlast (butlast pos)))
-        node (get elem node-pos)
-        [elem-left elem-right] (split-at node-pos elem)
-        [left-text right-text] (split-at strpos node)
-        with-cursor [(apply str left-text)
-                     [cursor c]
-                     (apply str right-text)]]
-    (assoc-in html elem-pos (vec
-                             (concat elem-left with-cursor (rest elem-right))))))
+;; 
+;; When the user makes an edit (types a key, makes a selection, etc.), we want to
+;; record that as a cursor movement and store their current editing state so that
+;; when the DOM gets re-rendered (upon some externally-triggered state change, such
+;; as a multiplayer cursor moving) they don't lose their place, and can keep editing
+;; as though nothing has happened.
+;; 
+;; To that end, we need to model all possible changes to the user's current editing
+;; environment. These include:
+;; 
+;;  * changes to the DOM such as other editors' cursor movements or arbitrary edits,
+;;    such as Elements being added or removed.
+;;  * changes to the user's cursor position or text selection
+;; 
+;; To do this, we keep track of the current selection data as a map inside the
+;; appstate atom:
+;; 
+;;   (:cursor @appstate) ; => {:anchor-offset 17, :range-count 1, ,,,}
+;;
+;; We also need to keep track of the path to each DOM node that may mutate during
+;; the lifetime of our application. This path is just a vector of numbers and is
+;; intended to be passed to get-in, assoc-in, and related functions along with a
+;; vector representing the common ancestor of all DOM nodes potentially being
+;; edited. That common ancestor is also stored within our appstate so we can 
+;; refer to it anytime.
+;; 
+;; Events we need to datafy and apply in order:
+;; 
+;;  * the user placed their cursor
+;;  * the user selected something
+;;  * the user typed something
+;;  * the user deleted some text
+;;  * the user inserted or deleted a field
+;;  * the user executed a tool (bold, italicize, etc.)
+;;  * any of the above, but for a collaborator (remote multiplayer user)
+;;  * a remote user joins the collab session
+;;  * a remote user becomes idle
+;;  * a revision is saved or published
+;; 
 
 
-(defn- inject-at [n coll x]
-  (let [[left right] (split-at n coll)]
-    (concat left [x] right)))
+(def appstate
+  (t/editable! (dom/q "#editable-container") {:editables [{:selector "h2,h3"}
+                                                          {:selector "p" :foo 'bar}]}))
 
-(defn- element? [x]
-  (and (vector? x) (keyword? (first x))))
-
-(defn- has-attrs-map? [elem]
-  (and (element? elem) (map? (second elem))))
-
-(defn- normalize-attrs [elem]
-  (if (has-attrs-map? elem)
-    elem
-    (vec (inject-at 1 elem {}))))
-
-
-(defn with-cursors [html cursors]
-  (reduce place-cursor html cursors))
-
-(defn make-editable?
-  "Determine whether to make the given element contenteditable or not"
-  [elem]
-  (and (element? elem)
-       (contains? #{:h2 :h3 :p} (first elem))))
-
-(defn make-editable [elem]
-  (vec (assoc-in (normalize-attrs elem) [1 :content-editable] true)))
-
-(defn contenteditable [x]
-  (if (make-editable? x) (make-editable x) x))
-
-
-(defn editable [html]
-  (vec (map contenteditable (with-cursors html (:cursors @appstate)))))
-
-(defn home-page []
-  [editable
-   (vec (concat [:div] (map :h (:editables @appstate))))])
 
 ;; -------------------------
 ;; Initialize app
 
 (defn mount-root []
-  (r/render [home-page] (.getElementById js/document "app")))
+  ; TODO this is creating a duplicate #editable-container - it shouldn't do that.
+  (r/render (:root @appstate) (:dom-root @appstate)))
 
-(defn init! []
+(defn ^:export init! []
   (mount-root))
+
