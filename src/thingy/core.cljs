@@ -3,8 +3,7 @@
    [clojure.datafy :refer [datafy]]
    [reagent.core :as r]
    [thingy.dom :as dom]
-   [thingy.helpers :as help]
-   [thingy.util :refer [vconj]]))
+   [thingy.util :refer [vconj inject-at]]))
 
 
 (defprotocol EditablePath
@@ -35,44 +34,77 @@
 
 
 
+(defn- ->contenteditable [elem]
+  (vec (assoc-in elem [1 :content-editable] true)))
 
-(defn query-editables [editables root]
-  (into {} (map (juxt #(dom/path % root) identity)
-                (reduce (fn [eds ed]
-                          (concat eds (-> ed :selector (dom/all root))))
-                        []
-                        editables))))
+(defn- ->editable [node root conf]
+  ; TODO apply tranformations dynamically according to tools/config
+  {:elem (->contenteditable (datafy node))
+   :path (dom/path node root)
+   :conf conf})
+
+(defn cursor [c]
+  [:span.cursor {:style {:color (:color c)
+                         :border-color (:color c)}}])
+
+(defn place-cursor [html {:keys [pos] :as c}]
+  (let [elem-pos (butlast (butlast pos))
+        node-pos (last (butlast pos))
+        strpos (last pos)
+        elem (get-in html (butlast (butlast pos)))
+        node (get elem node-pos)
+        [elem-left elem-right] (split-at node-pos elem)
+        [left-text right-text] (split-at strpos node)
+        with-cursor [(apply str left-text)
+                     (cursor c)
+                     (apply str right-text)]]
+    (assoc-in html elem-pos (vec
+                             (concat elem-left with-cursor (rest elem-right))))))
+
+(defn ->with-cursors [fragment cursors]
+  (reduce place-cursor fragment cursors))
+
+(->with-cursors [:<> {} [:p {} "aaa bbb"]] [{:pos [2 2 4]}])
+
+
+
+
+
+(defn tools [ed]
+  (:tools (:conf ed)))
+
+(defn query-editables [configs root]
+  (set (reduce (fn [editables {:keys [selector] :as conf}]
+                 (let [elems (dom/all selector root)
+                       these (map #(->editable % root conf) elems)]
+                   (concat editables these)))
+               []
+               configs)))
+
+
+
+;; TODO simulate random edits via these cursors
+(defonce cursors [{:pos [3 2 8]
+                   :color "red"
+                   :name "Coby"}])
+
+
 
 (defn ^:export editable! [root conf]
   (let [eds (query-editables (:editables conf) root)
+        root-fragment (reduce (fn [fragment ed]
+                                (assoc-in fragment (:path ed) (:elem ed)))
+                              (dom/fragment root)
+                              eds)
+        decorated (->with-cursors root-fragment cursors)
         state (r/atom {:conf conf
                        :dom-root root
-                       :root-content-fragment (dom/fragment root)
-                       :paths->nodes eds
+                       :root-content-fragment decorated
+                       :editables eds
                        :selection (datafy (dom/selection))
-                       :remote-cursors []})]
-    (.addEventListener root "click" (fn [e]
-                                      (js/console.log (.-target e))))
-    (.addEventListener root "selectionchange" (fn [e]
-                                                (js/console.log (.-target e))))
-    (js/console.log (clj->js (datafy root)))
+                       :remote-cursors cursors})]
     state))
 
-(comment
-
-  (editable! (dom/q "#editable-container")
-             ;; TODO
-             ;; * images
-             {:editables [{:selector "h2,h3"
-                           :tools [:b :u :i]}
-                          {:selector "p"
-                           :tools [:b :u :i :img :repeat]}]
-              ;; specify design rules:
-              ;; - <h2>s and <h3>s come as a package deal, one after the other
-              ;; - a <p> can only come after an <h3>
-              :design-rules [[:h2 :must :precede :h3]
-                             [:h3 :must :follow :h2]
-                             [:p :must :follow :h3]]})
-
-  ;;  
-  )
+(defn ^:export mount! [state]
+  (r/render (:root-content-fragment @state)
+            (:dom-root @state)))

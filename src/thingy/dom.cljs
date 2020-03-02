@@ -70,7 +70,7 @@
   (fragment [elem] (fragment (.-childNodes elem)))
 
   js/NodeList
-  (fragment [nodes] (vec (concat [:<>] (datafy nodes)))))
+  (fragment [nodes] (vec (concat [:<> {}] (datafy nodes)))))
 
 
 
@@ -204,7 +204,6 @@
   (datafy (selection))
   ;; => {:anchor-offset 0, :range-count 0, :backward? false, :focus-offset 0, :is-collapsed true, :type "None", :count 0, :focus-node nil, :anchor-node nil, :forward? false, :collapsed? true}
 
-  (ed-path (selection root))
 
   ;;  
   )

@@ -1,8 +1,7 @@
 (ns live-proto.core
     (:require
      [thingy.core :as t]
-     [thingy.dom :as dom]
-     [reagent.core :as r]))
+     [thingy.dom :as dom]))
 
 
 ;; 
@@ -47,16 +46,16 @@
 
 
 (def appstate
-  (t/editable! (dom/q "#editable-container") {:editables [{:selector "h2,h3"}
-                                                          {:selector "p" :foo 'bar}]}))
+  (t/editable! (dom/q "#editable-container")
+               {:editables [{:selector "h2,h3"}
+                            {:selector "p"}]}))
 
 
 ;; -------------------------
 ;; Initialize app
 
 (defn mount-root []
-  ; TODO this is creating a duplicate #editable-container - it shouldn't do that.
-  (r/render (:root-content-fragment @appstate) (:dom-root @appstate)))
+  (t/mount! appstate))
 
 (defn ^:export init! []
   (mount-root))

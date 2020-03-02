@@ -11,3 +11,7 @@
   ([] [])
   ([coll] (vec coll))
   ([v & args] (vec (apply conj v args))))
+
+(defn inject-at [n coll & xs]
+  (let [[left right] (split-at n coll)]
+    (concat left xs right)))
