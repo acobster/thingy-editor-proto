@@ -44,8 +44,12 @@
    :conf conf})
 
 (defn cursor [c]
-  [:span.cursor {:style {:color (:color c)
-                         :border-color (:color c)}}])
+  [:span.cursor {:style {:border-color (:color c)
+                         :background-color (:color c)}}
+   [:span.cursor-meta {:style {:color (or (:text-color c) "white")
+                               :background-color (:color c)}
+                       :content-editable false}
+    (:name c)]])
 
 (defn place-cursor [html {:keys [pos] :as c}]
   (let [elem-pos (butlast (butlast pos))
