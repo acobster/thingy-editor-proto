@@ -30,6 +30,8 @@
   js/NamedNodeMap
   (-seq [m] (vec (js/Array.from m))))
 
+;; TODO ISeq?
+
 (extend-protocol proto/Datafiable
   js/Element
   (datafy [elem] (seq elem))
