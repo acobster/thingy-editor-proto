@@ -3,6 +3,7 @@
    [clojure.datafy :refer [datafy]]
    [reagent.core :as r]
    [thingy.dom :as dom]
+   [thingy.events :as events]
    [thingy.util :refer [vconj inject-at]]))
 
 
@@ -33,13 +34,14 @@
       :focus-path   (vconj (dom/path focus-node root) focus-offset)})))
 
 
+(defn- ->contenteditable [elem state]
+  (vec (-> elem
+           (assoc-in [1 :content-editable] true)
+           (assoc-in [1 :on-key-press] (events/emitter state :contenteditable-keypress)))))
 
-(defn- ->contenteditable [elem]
-  (vec (assoc-in elem [1 :content-editable] true)))
-
-(defn- ->editable [node root conf]
+(defn- ->editable [node root conf state]
   ; TODO apply tranformations dynamically according to tools/config
-  {:elem (->contenteditable (datafy node))
+  {:elem (->contenteditable (datafy node) state)
    :path (dom/path node root)
    :conf conf})
 
@@ -51,6 +53,7 @@
                        :content-editable false}
     (:name c)]])
 
+;; TODO account for cursor positions when computing new paths
 (defn place-cursor [html {:keys [pos] :as c}]
   (let [elem-pos (butlast (butlast pos))
         node-pos (last (butlast pos))
@@ -68,47 +71,78 @@
 (defn ->with-cursors [fragment cursors]
   (reduce place-cursor fragment cursors))
 
-(->with-cursors [:<> {} [:p {} "aaa bbb"]] [{:pos [2 2 4]}])
-
-
-
 
 
 (defn tools [ed]
   (:tools (:conf ed)))
 
-(defn query-editables [configs root]
+(defn query-editables [configs root state]
   (set (reduce (fn [editables {:keys [selector] :as conf}]
                  (let [elems (dom/all selector root)
-                       these (map #(->editable % root conf) elems)]
+                       these (map #(->editable % root conf state) elems)]
                    (concat editables these)))
                []
                configs)))
 
 
 
-;; TODO simulate random edits via these cursors
-(defonce cursors [{:pos [3 2 8]
-                   :color "red"
-                   :name "Coby"}])
+;; TODO do this over real event channels
+(defn simulate-remote-cursor-movement! [state max-ms]
+  (let [dice (rand-int 10)
+        path [:remote-cursors (rand-int 2) :pos 2]]
+    (cond
+      (= dice 7) (swap! state assoc-in path (rand-int 50))
+      (> dice 5) (swap! state update-in path #(max 0 (dec %)))
+      :else      (swap! state update-in path #(min (inc %) 80))))
+
+  (js/setTimeout (fn []
+                   (simulate-remote-cursor-movement! state max-ms))
+                 (rand-int max-ms)))
+
+
+;; => 
 
 
 
-(defn ^:export editable! [root conf]
-  (let [eds (query-editables (:editables conf) root)
+(defn ^:export init-component [root conf]
+  (let [state (r/atom {})
+        eds (query-editables (:editables conf) root state)
         root-fragment (reduce (fn [fragment ed]
                                 (assoc-in fragment (:path ed) (:elem ed)))
                               (dom/fragment root)
                               eds)
-        decorated (->with-cursors root-fragment cursors)
-        state (r/atom {:conf conf
-                       :dom-root root
-                       :root-content-fragment decorated
-                       :editables eds
-                       :selection (datafy (dom/selection))
-                       :remote-cursors cursors})]
-    state))
+        ]
+    ;; TODO listen for real update Events on a channel
+    (simulate-remote-cursor-movement! state 3000)
 
-(defn ^:export mount! [state]
-  (r/render (:root-content-fragment @state)
-            (:dom-root @state)))
+    (reset! state {:root-content-fragment root-fragment
+                   :conf conf
+                   :dom-root root
+                   :editables eds
+                   :caret-pos 0
+                   :remote-cursors [{:name "Alice"
+                                     :pos [3 2 9]
+                                     :color "green"}
+                                    {:name "Bob"
+                                     :pos [5 2 25]
+                                     :color "purple"}]})
+    (r/create-class
+     {:render
+      (fn []
+        (->with-cursors (:root-content-fragment @state) (:remote-cursors @state)))
+
+      :component-did-update
+      (fn []
+        ;; TODO locate actual focused node/path
+        (let [p (second (seq (dom/all "p" (dom/q "#editable-container"))))
+              sel (dom/selection)
+              range (js/document.createRange)]
+          (.setStart range p 0)
+          (.collapse range true)
+          (.removeAllRanges sel)
+          (.addRange sel range)))})))
+
+
+(defn ^:export editable! [root conf]
+  (let [component (init-component root conf)]
+    (r/render [component] root)))

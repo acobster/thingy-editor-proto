@@ -45,17 +45,14 @@
 ;; 
 
 
-(def appstate
-  (t/editable! (dom/q "#editable-container")
-               {:editables [{:selector "h2,h3"}
-                            {:selector "p"}]}))
-
 
 ;; -------------------------
 ;; Initialize app
 
 (defn mount-root []
-  (t/mount! appstate))
+  (t/editable! (dom/q "#editable-container")
+               {:editables [{:selector "h2,h3"}
+                            {:selector "p"}]}))
 
 (defn ^:export init! []
   (mount-root))

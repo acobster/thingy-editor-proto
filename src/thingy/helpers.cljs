@@ -24,21 +24,6 @@
                          :border-color (:color c)}}])
 
 
-(defn place-cursor [html {:keys [pos] :as c}]
-  (let [elem-pos (butlast (butlast pos))
-        node-pos (last (butlast pos))
-        strpos (last pos)
-        elem (get-in html (butlast (butlast pos)))
-        node (get elem node-pos)
-        [elem-left elem-right] (split-at node-pos elem)
-        [left-text right-text] (split-at strpos node)
-        with-cursor [(apply str left-text)
-                     [cursor c]
-                     (apply str right-text)]]
-    (assoc-in html elem-pos (vec
-                             (concat elem-left with-cursor (rest elem-right))))))
-
-
 (defn- inject-at [n coll x]
   (let [[left right] (split-at n coll)]
     (concat left [x] right)))
