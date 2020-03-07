@@ -113,7 +113,7 @@
                               eds)
         ]
     ;; TODO listen for real update Events on a channel
-    (simulate-remote-cursor-movement! state 3000)
+    ;(simulate-remote-cursor-movement! state 3000)
 
     (reset! state {:root-content-fragment root-fragment
                    :conf conf
@@ -133,11 +133,15 @@
 
       :component-did-update
       (fn []
-        ;; TODO locate actual focused node/path
-        (let [p (second (seq (dom/all "p" (dom/q "#editable-container"))))
+        (let [{:keys [dom-root caret-pos]} @state
+              focus-node (dom/path->node dom-root (butlast caret-pos))
               sel (dom/selection)
               range (js/document.createRange)]
-          (.setStart range p 0)
+          (js/console.log (clj->js caret-pos))
+          (js/console.log focus-node (last caret-pos))
+          ;; TODO why does this fail?
+          ;(.setStart range focus-node (last caret-pos))
+          (.setStart range focus-node 0)
           (.collapse range true)
           (.removeAllRanges sel)
           (.addRange sel range)))})))

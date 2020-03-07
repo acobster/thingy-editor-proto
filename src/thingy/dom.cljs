@@ -152,6 +152,15 @@
                 (conj (path* (parent node) ancestor) (offset node))))]
       (path* node ancestor))))
 
+(defn child [node idx]
+  (.item (.-childNodes node) idx))
+
+(defn path->node [root path]
+  (loop [p path node root]
+    (if-let [step (first p)]
+      (child node step)
+      node)))
+
 (defn common-ancestor
   "Finds the common ancestor of all Nodes"
   ([node]
