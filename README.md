@@ -1,6 +1,6 @@
-# Live Editing Prototype
+# Design-Aware Editing Prototype
 
-Proof-of-concept for Live Editing using the Thingy editor.
+Proof-of-concept for "Design-Aware" Editing using the Thingy editor.
 
 ### Development mode
 To start the compiler, navigate to the project folder and run the following command in the terminal:
