@@ -39,20 +39,20 @@
 
 
 (defn listen-for-interactions! [{:keys [elem conf]} editor-state global-conf]
-  (.addEventListener elem
-                     "keyup"
-                     (fn [e]
-                       (events/emit! e elem global-conf)))
-  (.addEventListener elem
-                     "mouseenter"
-                     #(swap! editor-state
-                             (fn [state]
-                               (-> state
-                                   ; TODO let caller implement own positioning logic
-                                   (assoc :pos (ui/relative-position elem))
-                                   (assoc :tools (map (fn [t]
-                                                        (tools/tool t elem))
-                                                      (:tools conf))))))))
+  (letfn [(open-editor! [_]
+                        (swap! editor-state
+                               (fn [state]
+                                 (-> state
+                                     (assoc :pos (ui/relative-position elem))
+                                     (assoc :tools (map (fn [t]
+                                                          (tools/tool t elem))
+                                                        (:tools conf)))))))]
+   (.addEventListener elem
+                      "keyup"
+                      (fn [e]
+                        (events/emit! e elem global-conf)))
+   (.addEventListener elem "focus" open-editor!)
+   (.addEventListener elem "mouseenter" open-editor!)))
 
 
 (defn ^:export editable! [root conf] 
