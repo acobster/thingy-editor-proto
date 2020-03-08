@@ -1,12 +1,8 @@
 (ns live-proto.metro-parks-tacoma.core
     (:require
      [thingy.core :as t]
-     [thingy.dom :as dom]
      [thingy.backend.dom :as dom-backend]
-     [thingy.backend.http :as http-backend]
-     [thingy.events :as events]
-     [thingy.tools :as tools]
-     [thingy.ui :as ui]))
+     [thingy.backend.http :as http-backend]))
 
 
 (def media-library [{:uri "/metroparkstacoma/media-library/fort-hero-2-345x390.jpg" :alt "Fort Hero"}

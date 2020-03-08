@@ -7,10 +7,11 @@
     (.setAttribute elem (name (key attr)) (val attr))))
 
 
-(defn update! [{:keys [command attrs] :as event} elem _]
-  (cond
-    (string? command) (js/document.execCommand command)
-    (map? attrs) (update-elem! elem attrs)))
+(defn update! [event elem _]
+  (let [{:keys [command attrs]} event]
+    (cond
+      (string? command) (js/document.execCommand command)
+      (map? attrs) (update-elem! elem attrs))))
 
 
 (defonce ^:export backend {:name :dom
