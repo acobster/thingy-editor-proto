@@ -58,7 +58,17 @@
   ;; datafy NamedNodeMaps of Attr objects into Clojure maps
   js/NamedNodeMap
   (datafy [attrs] (keywordize-keys (into {} (map (juxt #(.-name %) #(.-value %))
-                                                 (seq attrs))))))
+                                                 (seq attrs)))))
+  
+  js/DOMRect
+  (datafy [rect] {:left (.-left rect)
+                  :right (.-right rect)
+                  :top (.-top rect)
+                  :bottom (.-bottom rect)
+                  :x (.-x rect)
+                  :y (.-y rect)
+                  :width (.-width rect)
+                  :height (.-height rect)}))
 
 (extend-protocol ICounted
   js/NamedNodeMap
@@ -105,6 +115,9 @@
 (defn attributes [node]
   (.-attributes node))
 
+(defn dataset [node]
+  (.-dataset node))
+
 
 
 
@@ -131,6 +144,8 @@
 (defn descendant? [node ancestor]
   (.contains ancestor node))
 
+(defn bounding-rect [elem]
+  (.getBoundingClientRect elem))
 
 (defn offset [node]
   (loop [n node ct 0]
@@ -208,28 +223,3 @@
 
 (defn collapsed? [sel]
   (.-isCollapsed sel))
-
-
-(comment
-
-  (datafy (selection))
-  ;; => {:anchor-offset 0, :range-count 0, :backward? false, :focus-offset 0, :is-collapsed true, :type "None", :count 0, :focus-node nil, :anchor-node nil, :forward? false, :collapsed? true}
-
-
-  ;;  
-  )
-
-
-
-
-
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-   ;;                             ;;
-  ;;          MUTATIONS          ;;
- ;;                             ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn select!
-  "Set the current user's text selection and cursor position"
-  [selection]
-  (js/console.log "TODO: select!" selection))
