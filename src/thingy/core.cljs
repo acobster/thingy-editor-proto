@@ -31,7 +31,6 @@
     state))
 
 (defn make-contenteditable? [elem ed]
-(js/console.log (:contenteditable ed))
   (and elem (not (false? (:contenteditable ed)))))
 
 (defn contenteditable! [node]
@@ -43,7 +42,7 @@
                         (swap! editor-state
                                (fn [state]
                                  (-> state
-                                     (assoc :pos (ui/relative-position elem))
+                                     (assoc :elem elem)
                                      (assoc :tools (map (fn [t]
                                                           (tools/tool t elem))
                                                         (:tools conf)))))))]

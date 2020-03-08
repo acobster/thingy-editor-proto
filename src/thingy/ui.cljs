@@ -43,13 +43,13 @@
     div))
 
 (defn relative-position [elem]
-  ; TODO take width & height of toolbar into account
-  (let [{:keys [top left width]} (datafy (dom/bounding-rect elem))
-        x (+ left (/ width 2))]
-    [x top]))
+  (let [{:keys [x y]} (some-> elem dom/bounding-rect datafy)]
+    [x y]))
 
 (defn ^:export default-ui [editor-state conf]
-  (let [[x y] (:pos @editor-state)
+  (let [elem (:elem @editor-state)
+        w (some-> elem dom/bounding-rect datafy :width)
+        [x y] (relative-position elem)
         tools (:tools @editor-state)
         display? (> (count tools) 0)]
     ; TODO make toolbar rendering pluggable
@@ -57,6 +57,8 @@
       [:div.toolbar {:style {:position "absolute"
                              :bottom (str "calc(" y "px - 5px)")
                              :left x
+                             :width w
+                             :max-width "50%"
                              :background-color "lightgray"}}
        [:h4 "TOOLBAR"]
        (map-indexed (fn [i t]
