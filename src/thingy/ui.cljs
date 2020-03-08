@@ -48,8 +48,7 @@
         x (+ left (/ width 2))]
     [x top]))
 
-
-(defn- toolbar [editor-state conf]
+(defn ^:export default-ui [editor-state conf]
   (let [[x y] (:pos @editor-state)
         tools (:tools @editor-state)
         display? (> (count tools) 0)]
@@ -65,6 +64,11 @@
                       [render-tool t conf])
                     tools)]
       [:div {:style {:display "none"}}])))
+
+
+(defn- toolbar [editor-state conf]
+  (let [component (or (:ui conf) default-ui)]
+    [component editor-state conf]))
 
 
 (defn mount! [editor-state conf]
