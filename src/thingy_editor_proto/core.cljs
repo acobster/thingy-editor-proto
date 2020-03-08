@@ -1,4 +1,4 @@
-(ns live-proto.core
+(ns thingy-editor-proto.core
     (:require
      [thingy.core :as t]
      [thingy.backend.dom :as dom-backend]

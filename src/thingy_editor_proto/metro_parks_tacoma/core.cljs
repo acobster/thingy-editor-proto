@@ -1,4 +1,4 @@
-(ns live-proto.metro-parks-tacoma.core
+(ns thingy-editor-proto.metro-parks-tacoma.core
     (:require
      [thingy.core :as t]
      [thingy.backend.dom :as dom-backend]
