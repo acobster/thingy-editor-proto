@@ -42,25 +42,25 @@
     (.setAttribute div "id" (gensym "toolbar--"))
     div))
 
-(defn relative-position [elem]
-  (let [{:keys [x y]} (some-> elem dom/bounding-rect datafy)]
-    [x y]))
+;; TODO use herb or spade for inline styles
+;; https://github.com/roosta/herb
+;; https://github.com/dhleong/spade
+(defn editor->style [editor-state]
+  (let [{:keys [x y height]} (some-> (:elem editor-state) dom/bounding-rect datafy)]
+    {:position "absolute"
+     :top (str (+ y height) "px")
+     :left (str x "px")
+     :max-width "100%"
+     :background-color "blue"}))
+
+
 
 (defn ^:export default-ui [editor-state conf]
-  (let [elem (:elem @editor-state)
-        w (some-> elem dom/bounding-rect datafy :width)
-        [x y] (relative-position elem)
-        tools (:tools @editor-state)
+  (let [tools (:tools @editor-state)
         display? (> (count tools) 0)]
     ; TODO make toolbar rendering pluggable
     (if display?
-      [:div.toolbar {:style {:position "absolute"
-                             :bottom (str "calc(" y "px - 5px)")
-                             :left x
-                             :width w
-                             :max-width "50%"
-                             :background-color "lightgray"}}
-       [:h4 "TOOLBAR"]
+      [:div.toolbar {:style (editor->style @editor-state)}
        (map-indexed (fn [i t]
                       ^{:key i}
                       [render-tool t conf])
