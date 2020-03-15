@@ -57,8 +57,7 @@
 (defn ^:export editable! [root conf] 
   (let [conf (keywordize-keys conf)
         editor-state (r/atom {:tools []
-                              :backends (:backends conf)
-                              :pos [0 0]}) ; THIS WILL CHANGE PER ELEMENT
+                              :backends (:backends conf)})
         ; set up an editor state
         ; hook tool events to backends in conf
         ; TODO add dom-backend by default
