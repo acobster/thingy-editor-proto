@@ -4,9 +4,18 @@
    [reagent.core :as r]
    [thingy.dom :as dom]
    [thingy.events :as events]
+   [thingy.ui :as ui]
    [thingy.tools :as tools]
-   [thingy.ui :as ui]))
+   [thingy.tools.image]
+   [thingy.tools.text]))
 
+
+(defmethod tools/tool :default [t _]
+  (js/console.error "not implemented: " (clj->js t)))
+
+(defmethod tools/render-tool :default [tool conf]
+  [:button {:on-click (tools/trigger tool conf)}
+   (tools/label tool)])
 
 
 (defn- ->editable [node ed-conf]
