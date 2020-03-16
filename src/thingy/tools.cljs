@@ -81,9 +81,15 @@
 
 
 (defmethod tool :image [t elem]
-  (conj t {:name :image
-           :elem elem
-           :triggers {:pick (fn [_ conf _ attrs]
-                              (let [controlled (or (some-> (:control t) (dom/q))
-                                                   elem)]
-                                (events/emit! {:attrs attrs} controlled conf)))}}))
+  (let [tool-defn {:name :image
+                   :elem elem
+                   :triggers {:pick (fn [_ conf _ attrs]
+                                      (let [controlled (or (some-> (:control t) (dom/q))
+                                                           elem)]
+                                        (events/emit! {:attrs attrs} controlled conf)))}}]
+    (cond
+      (keyword? t)
+      tool-defn
+
+      (map? t)
+      (conj t tool-defn))))
